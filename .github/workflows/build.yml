@@ -11,21 +11,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Full App Structure
+      - name: Create Minimal App
         run: |
           mkdir -p app/src/main/java/com/fast/carlauncher
           mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/res/layout-land
-          mkdir -p app/src/main/res/layout
 
-          # Gradle Settings
           echo 'rootProject.name = "FastCarLauncher"' > settings.gradle
           echo "include ':app'" >> settings.gradle
-          echo "plugins { id 'com.android.application' version '8.2.2' apply false; id 'org.jetbrains.kotlin.android' version '1.9.22' apply false }" > build.gradle
+          echo "plugins { id 'com.android.application' version '8.1.0' apply false; id 'org.jetbrains.kotlin.android' version '1.9.0' apply false }" > build.gradle
           echo "android.useAndroidX=true" > gradle.properties
 
-          # App build.gradle
           cat << 'EOF' > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -33,37 +28,25 @@ jobs:
           }
           android {
               namespace 'com.fast.carlauncher'
-              compileSdk 34
+              compileSdk 33
               defaultConfig {
                   applicationId "com.fast.carlauncher"
                   minSdk 21
-                  targetSdk 34
+                  targetSdk 33
                   versionCode 1
                   versionName "1.0"
               }
               buildTypes {
-                  release { minifyEnabled false }
                   debug { minifyEnabled false }
               }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_1_8
-                  targetCompatibility JavaVersion.VERSION_1_8
-              }
-              kotlinOptions { jvmTarget = '1.8' }
           }
           dependencies {}
           EOF
 
-          # AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application
-                  android:allowBackup="true"
-                  android:label="لانشر السيارة السريع"
-                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true">
+              <application android:label="لانشر السريع" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+                  <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.HOME" />
@@ -75,14 +58,12 @@ jobs:
           </manifest>
           EOF
 
-          # MainActivity.kt
           cat << 'EOF' > app/src/main/java/com/fast/carlauncher/MainActivity.kt
           package com.fast.carlauncher
           import android.app.Activity
           import android.os.Bundle
           import android.widget.TextView
           import android.view.Gravity
-          import android.view.ViewGroup
           import android.widget.LinearLayout
 
           class MainActivity : Activity() {
@@ -94,9 +75,9 @@ jobs:
                       setBackgroundColor(0xFF0B1013.toInt())
                   }
                   val text = TextView(this).apply {
-                      text = "لانشر السيارة السريع - يعمل بنجاح"
+                      text = "لانشر السيارة السريع يعمل بكفاءة"
                       setTextColor(0xFF5EEAD4.toInt())
-                      textSize = 22f
+                      textSize = 24f
                       gravity = Gravity.CENTER
                   }
                   layout.addView(text)
@@ -113,14 +94,13 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.5'
 
       - name: Build Debug APK
-        run: gradle assembleDebug
+        run: ./gradlew assembleDebug
 
       - name: Upload Ready APK
         uses: actions/upload-artifact@v4
         with:
           name: FastCarLauncher-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          
